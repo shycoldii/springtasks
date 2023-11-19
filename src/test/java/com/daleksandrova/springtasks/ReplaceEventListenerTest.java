@@ -1,9 +1,9 @@
 package com.daleksandrova.springtasks;
 
-import com.daleksandrova.springtasks.event.NeedToPassSpringExamEvent;
-import com.daleksandrova.springtasks.listener.NeedToPassSpringExamEventExternalListener;
-import com.daleksandrova.springtasks.listener.NeedToPassSpringExamEventMyListener;
-import com.daleksandrova.springtasks.publisher.NeedToPassSpringExamEventPublisher;
+import com.daleksandrova.springtasks.task1.event.NeedToPassSpringExamEvent;
+import com.daleksandrova.springtasks.task1.listener.NeedToPassSpringExamEventExternalListener;
+import com.daleksandrova.springtasks.task1.listener.NeedToPassSpringExamEventMyListener;
+import com.daleksandrova.springtasks.task1.publisher.NeedToPassSpringExamEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,7 +47,6 @@ public class ReplaceEventListenerTest {
      */
     @SpyBean
     private NeedToPassSpringExamEventExternalListener needToPassSpringExamEventExternalListener;
-
 
     /**
      * Спай-бин для проверок нашего слушателя.

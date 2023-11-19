@@ -1,20 +1,18 @@
 package com.daleksandrova.springtasks;
 
-import com.daleksandrova.springtasks.controller.FileUploadController;
-import com.daleksandrova.springtasks.dto.FileProperties;
-import com.daleksandrova.springtasks.entity.FileEntity;
-import com.daleksandrova.springtasks.exception.FileStorageException;
-import com.daleksandrova.springtasks.service.FileManager;
-import com.daleksandrova.springtasks.service.FileService;
+import com.daleksandrova.springtasks.task2.controller.FileUploadController;
+import com.daleksandrova.springtasks.task2.dto.FileProperties;
+import com.daleksandrova.springtasks.task2.entity.FileEntity;
+import com.daleksandrova.springtasks.task2.exception.FileStorageException;
+import com.daleksandrova.springtasks.task2.service.FileManager;
+import com.daleksandrova.springtasks.task2.service.FileService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.assertj.core.api.Assertions;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +25,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.transaction.UnexpectedRollbackException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -51,7 +48,6 @@ import static org.mockito.Mockito.doThrow;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FileUploadControllerTest {
 
     /**
@@ -164,7 +160,7 @@ public class FileUploadControllerTest {
         Assertions
                 .assertThatThrownBy(() -> mockMvc.perform(MockMvcRequestBuilders.multipart(FileUploadController.FILE_API_PATH + FileUploadController.FILE_UPLOAD_PATH)
                         .file(file))
-                        .andExpect(MockMvcResultMatchers.status().is5xxServerError())).hasCauseInstanceOf(UnexpectedRollbackException.class);
+                        .andExpect(MockMvcResultMatchers.status().is5xxServerError())).hasCauseInstanceOf(FileStorageException.class);
 
         // Данных в БД нет
         assertThat(jdbcTemplate.queryForList("select * from file_entity").size()).isEqualTo(0);
@@ -198,9 +194,10 @@ public class FileUploadControllerTest {
         MockMultipartFile file = new MockMultipartFile("file", fileName, contentType, content.getBytes());
 
         // Обращаемся к контроллеру, ожидаем ошибку
-        mockMvc.perform(MockMvcRequestBuilders.multipart(FileUploadController.FILE_API_PATH + FileUploadController.FILE_UPLOAD_PATH)
-                .file(file))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+        Assertions
+                .assertThatThrownBy(() -> mockMvc.perform(MockMvcRequestBuilders.multipart(FileUploadController.FILE_API_PATH + FileUploadController.FILE_UPLOAD_PATH)
+                        .file(file))
+                        .andExpect(MockMvcResultMatchers.status().is5xxServerError())).hasCauseInstanceOf(RuntimeException.class);
 
         // Данных в БД нет
         assertThat(jdbcTemplate.queryForList("select * from file_entity").size()).isEqualTo(0);
