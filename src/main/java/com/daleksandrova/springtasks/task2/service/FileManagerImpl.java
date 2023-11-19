@@ -1,6 +1,6 @@
-package com.daleksandrova.springtasks.service;
+package com.daleksandrova.springtasks.task2.service;
 
-import com.daleksandrova.springtasks.exception.FileStorageException;
+import com.daleksandrova.springtasks.task2.exception.FileStorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,14 +64,14 @@ public class FileManagerImpl implements FileManager {
         tmpDir = new File(base, "tmp");
         metaDir = new File(base, "meta");
 
-        if (!storageDir.mkdirs()) {
-            LOG.debug("Failed to make dir {}", storageDir.getName());
+        if (!storageDir.exists() && !storageDir.mkdirs()) {
+            throw new IllegalStateException("Failed to make dir " + storageDir.getName());
         }
-        if (!tmpDir.mkdirs()) {
-            LOG.debug("Failed to make dir {}", tmpDir.getName());
+        if (!tmpDir.exists() && !tmpDir.mkdirs()) {
+            throw new IllegalStateException("Failed to make dir " + tmpDir.getName());
         }
-        if (!metaDir.mkdirs()) {
-            LOG.debug("Failed to make dir {}", metaDir.getName());
+        if (!metaDir.exists() && !metaDir.mkdirs()) {
+            throw new IllegalStateException("Failed to make dir " + metaDir.getName());
         }
     }
 
