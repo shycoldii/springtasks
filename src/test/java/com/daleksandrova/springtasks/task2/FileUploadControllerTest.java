@@ -1,4 +1,4 @@
-package com.daleksandrova.springtasks;
+package com.daleksandrova.springtasks.task2;
 
 import com.daleksandrova.springtasks.task2.controller.FileUploadController;
 import com.daleksandrova.springtasks.task2.dto.FileProperties;

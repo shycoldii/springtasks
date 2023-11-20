@@ -1,4 +1,4 @@
-package com.daleksandrova.springtasks;
+package com.daleksandrova.springtasks.task1;
 
 import com.daleksandrova.springtasks.task1.event.NeedToPassSpringExamEvent;
 import com.daleksandrova.springtasks.task1.listener.NeedToPassSpringExamEventExternalListener;
