@@ -8,14 +8,26 @@
 <h4> Способ 1</h4>
 <p>В мире событий приложения всем управляет ApplicationEventMulticaster - интерфейс, имплементаторы которого могут манипулировать несколькими объектами ApplicationListener и публиковать в них события. 
    
-   Получается, чтобы отключить слушателя в приложении - достаточно сказать об этом ApplicationEventMulticaster. У интерфейса есть ряд методов для изменения множества слушателей (добавить/удалить). Стоит быть осторожнее с наследованием слушателей (когда бин наследует бин с слушателями - слушатели перейдут новому бину тоже): так как они хранятся по имени в Set, то может произойти непредвиденное поведение. К тому же, можно управлять не только слушателями-методами, но и полноценными слушателями (они все хранятся вместе, но для EventListener-ов создается обертка ApplicationListenerMethodAdapter). 
+   Получается, чтобы отключить слушателя в приложении - достаточно сказать об этом ApplicationEventMulticaster. У интерфейса есть ряд методов для изменения множества слушателей (добавить/удалить). Стоит быть осторожнее с наследованием слушателей (когда бин наследует бин с слушателями - слушатели перейдут новому бину тоже). К тому же, можно управлять не только слушателями-методами, но и полноценными слушателями (они все хранятся вместе, но для EventListener-ов создается обертка ApplicationListenerMethodAdapter). 
    
    Spring создает ApplicationEventMulticaster после создания BPP.
    ApplicationEventPublisher может использовать ApplicationEventMulticaster в качестве делегата для фактической публикации событий.
    
    Здесь важно уточнить:  https://github.com/spring-projects/spring-framework/issues/26638 был заведен в 2021 году. С версии 5.3 появилась возможность исключить слушателей по их идентификатору (по сути, название метода). До этого просто так исключить EventListener из коробки было нельзя (все остальные методы могли отключать целиком по имени бина). Если версия ниже, то стоит реализовать что-то подобное: https://copyprogramming.com/howto/best-practice-for-dynamically-removing-a-spring-applicationlistener </p>
 <h4> Способ 2 </h4>
-<p>Можно подменить бин при конфигурациях/инъекциях (установить Primary/Qualifier). </p>
+<p>Можно подменить бин при конфигурациях/инъекциях. В случаях, когда интерфейса нет, можно отнаследоваться от внешнего листенера, переопределить метод-слушатель, объявить Bean в конфигурации с именем внешнего листенера и вернуть свой класс + указать spring.main.allow-bean-definition-overriding=true </p>
+<p>Способ достаточно запаристый... В тестах проверяется по NeedToRestEvent. </p>
+<p>Ситуация 1: Наследуем только 1 из 2 слушателей (на самом деле, указание @EventListener необязательно). Бин объявляем через Сomponent. </p>
+<p>Результат: регистрируются оба бина, у внешнего остаются оба слушателя, для нашего работает переопределенный листенер и внешний, который не переопредили (4) </p>
+<p> Ситуация 2: Наследуем только 1 из 2 слушателей. Бин объявляем через Component с именем внешнего слушателя.</p>
+<p> Результат: .ConflictingBeanDefinitionException: Annotation-specified bean name 'needToRestEventExternalListener' for bean class [com.daleksandrova.springtasks.task1.listener.NeedToRestEventMyListener] conflicts with existing, non-compatible bean definition of same name and class [com.daleksandrova.springtasks.task1.listener.NeedToRestEventExternalListener]</p>
+<p> Уберем аннотацию Component и создадим бин в конфигурации с помощью @Bean (т.е. @Bean
+                                                                                       public NeedToRestEventExternalListener needToRestEventExternalListener() {
+                                                                                           return new NeedToRestEventMyListener();
+                                                                                       }). </p>
+<p>Результат: The bean 'needToRestEventExternalListener', defined in com.daleksandrova.springtasks.SpringTasksApplication, could not be registered. A bean with that name has already been defined in file [/Users/darerror/Work/spring_ex/springtasks/target/classes/com/daleksandrova/springtasks/task1/listener/NeedToRestEventExternalListener.class] and overriding is disabled.</p>
+<p> Докрутим, проставим spring.main.allow-bean-definition-overriding=true</p>
+<p>Результат: приложение не упало, BF был перезаписан конфигурационным значением. Работают только наши слушатели (переопределенный и унаследованный внешний) (2). Бин зарегистрирован только переопределенный (наш). </p>
 <h4> Способ 3 </h4>
 <p> Старый добрый АОП. Можно настроить перехват необходимого метода с помощью AroundAdvice и просто… ничего не делать. Подход работающий, но очень костыльный, так как по факту в контейнере будет присутствовать слушатель, которого мы хотим исключить (к тому же, метод каждый раз будет вызываться). При существовании 1 способа совершенно не вижу смысла от этого. </p>
 <h4> А может быть... BPP или BFPP? </h4>

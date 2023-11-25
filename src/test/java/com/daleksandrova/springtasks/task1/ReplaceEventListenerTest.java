@@ -1,9 +1,12 @@
 package com.daleksandrova.springtasks.task1;
 
 import com.daleksandrova.springtasks.task1.event.NeedToPassSpringExamEvent;
+import com.daleksandrova.springtasks.task1.event.NeedToRestEvent;
 import com.daleksandrova.springtasks.task1.listener.NeedToPassSpringExamEventExternalListener;
 import com.daleksandrova.springtasks.task1.listener.NeedToPassSpringExamEventMyListener;
+import com.daleksandrova.springtasks.task1.listener.NeedToRestEventExternalListener;
 import com.daleksandrova.springtasks.task1.publisher.NeedToPassSpringExamEventPublisher;
+import com.daleksandrova.springtasks.task1.publisher.NeedToRestEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.SmartApplicationListener;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,10 +35,16 @@ public class ReplaceEventListenerTest {
     private final String NAME_OF_EXTERNAL_LISTENER = "onNeedToPassSpringExamEventForExclude(";
 
     /**
-     * Создатель события.
+     * Создатель события "Нужно сдать экзамен Spring".
      */
     @Autowired
     private NeedToPassSpringExamEventPublisher needToPassSpringExamEventPublisher;
+
+    /**
+     * Создатель события "Нужно отдохнуть".
+     */
+    @Autowired
+    private NeedToRestEventPublisher needToRestEventPublisher;
 
     /**
      * Управляющий слушателями событий.
@@ -55,6 +65,12 @@ public class ReplaceEventListenerTest {
     private NeedToPassSpringExamEventMyListener needToPassSpringExamEventMyListener;
 
     /**
+     * Спай-бин для проверок замены слушателя через конфигурации.
+     */
+    @SpyBean
+    private NeedToRestEventExternalListener needToRestEventExternalListener;
+
+    /**
      * Тест, проверяющий самый прямой кейс: без исключений/замен все слушатели работают.
      */
     @Test
@@ -67,6 +83,18 @@ public class ReplaceEventListenerTest {
 
         // проверяем, что метод нашего слушателя БЫЛ вызван
         verify(needToPassSpringExamEventMyListener, times(1)).onNeedToPassSpringExamEvent(any(NeedToPassSpringExamEvent.class));
+
+        // публикуем событие "Нужно отдохнуть"
+        needToRestEventPublisher.publishNeedToRestEvent("Right now!");
+
+        // проверяем, что метод нашего слушателя БЫЛ был вызван 1 раз (переопределенный)
+        verify(needToRestEventExternalListener, times(1)).onNeedToRestEvent(any(NeedToRestEvent.class));
+
+        // проверяем, что метод нашего слушателя БЫЛ был вызван 1 раз (мы его не переопределяли)
+        verify(needToRestEventExternalListener, times(1)).onNeedToRestEventWithoutOverriding(any(NeedToRestEvent.class));
+
+        // по сумме чисел видно, что это замененный бин, иначе было бы 11
+        assertThat(needToRestEventExternalListener.getHoursOfRest()).isEqualTo(6);
     }
 
     /**
