@@ -25,7 +25,7 @@
                                                                                        public NeedToRestEventExternalListener needToRestEventExternalListener() {
                                                                                            return new NeedToRestEventMyListener();
                                                                                        }). </p>
-<p>Результат: The bean 'needToRestEventExternalListener', defined in com.daleksandrova.springtasks.SpringTasksApplication, could not be registered. A bean with that name has already been defined in file [/Users/darerror/Work/spring_ex/springtasks/target/classes/com/daleksandrova/springtasks/task1/listener/NeedToRestEventExternalListener.class] and overriding is disabled.</p>
+<p>Результат: The bean 'needToRestEventExternalListener', defined in com.daleksandrova.springtasks.SpringTasksApplication, could not be registered. A bean with that name has already been defined in file com/daleksandrova/springtasks/task1/listener/NeedToRestEventExternalListener.class] and overriding is disabled.</p>
 <p> Докрутим, проставим spring.main.allow-bean-definition-overriding=true</p>
 <p>Результат: приложение не упало, BF был перезаписан конфигурационным значением. Работают только наши слушатели (переопределенный и унаследованный внешний) (2). Бин зарегистрирован только переопределенный (наш). </p>
 <h4> Способ 3 </h4>
